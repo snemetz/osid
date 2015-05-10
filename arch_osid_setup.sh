@@ -12,6 +12,15 @@ ImageDir="$BaseDir/imgroot"
 SystemDir="$BaseDir/system"
 WebDir="$BaseDir/www/public_html"
 
+if [ -f /etc/arch-release ]; then
+  # Running on Arch
+  cmd_pkg_install='pacman -Syu'
+  cmd_enable='systemctl enable XXX'
+  cmd_restart='systemctl restart XXX'
+  # package list
+fi
+# TODO: Add code for Raspbian, Fedora
+
 #hostnamectl set-hostname osid
 pacman -Syu unzip git nginx php-fpm dcfldd cronie samba
 git clone $RepoSource $BaseDir
