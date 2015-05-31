@@ -3,50 +3,50 @@
 if (isset($_POST['WriteImage'])) {
     
     //make sure imagefile.info is blank
-    shell_exec("cat /dev/null > /etc/osid/system/imagefile.info");
+    shell_exec('cat /dev/null > /etc/osid/system/imagefile.info');
     
     //write selected image to the info file
-    shell_exec("echo \"" . $_POST['ImageToUse'] . "\" > /etc/osid/system/imagefile.info");
+    shell_exec('echo "' . $_POST['ImageToUse'] . '" > /etc/osid/system/imagefile.info');
 
     //declare DeviceList and UmountList variables
-    $DeviceList = "";
-    $UmountList = "";
+    $DeviceList = '';
+    $UmountList = '';
     
     //create device list from checkbox array
     foreach ($_POST['Device'] as &$DeviceName) {
-        
+
         //put device into variable for use in dcfldd command
-        $DeviceList .= "of=/dev/" . $DeviceName . " ";
-        
+        $DeviceList .= 'of=/dev/' . $DeviceName . ' ';
+
         //put device into variable for unmounting of drives
-        $UmountList .= "/usr/bin/umount /dev/" . $DeviceName . " & ";
-        
+        $UmountList .= '/usr/bin/umount /dev/' . $DeviceName . ' & ';
+
     } //END create device list from checkbox array
-    
+
     //trim off trailing space from device list varaible
     $DeviceList = rtrim($DeviceList);
-    
+
     //trim off trailing space from umount list variable
     $UmountList = substr($UmountList, 0, -3);
-    
+
     //make sure devicelist.info is blank
-    shell_exec("cat /dev/null > /etc/osid/system/devicelist.info");
-    
+    shell_exec('cat /dev/null > /etc/osid/system/devicelist.info');
+
     //write devices to the info file
-    shell_exec("echo \"" . $DeviceList . "\" > /etc/osid/system/devicelist.info");
-    
+    shell_exec('echo "' . $DeviceList . '" > /etc/osid/system/devicelist.info');
+
     //make sure umountlist.info is blank
-    shell_exec("cat /dev/null > /etc/osid/system/umountlist.info");
-    
+    shell_exec('cat /dev/null > /etc/osid/system/umountlist.info');
+
     //write devices to the info file
-    shell_exec("echo \"" . $UmountList . "\" > /etc/osid/system/umountlist.info");
-    
+    shell_exec('echo "' . $UmountList . '" > /etc/osid/system/umountlist.info');
+
     //make sure status.info is blank
-    shell_exec("cat /dev/null > /etc/osid/system/status.info");
-    
+    shell_exec('cat /dev/null > /etc/osid/system/status.info');
+
     //set the status.info to one (start job)
-    shell_exec("echo \"1\" > /etc/osid/system/status.info");
-    
+    shell_exec('echo "1" > /etc/osid/system/status.info');
+
 } //END check if the form has been submitted
 ?>
 <!DOCTYPE html>
@@ -76,92 +76,92 @@ if (isset($_POST['WriteImage'])) {
 	<!--[if lt IE 9]>
 		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
-	
+
 	<script src="scripts/ajax.js" type="text/javascript"></script>
 	<script type="text/javascript">
 	function startMonitor() {
 
         xmlhttp=GetXmlHttpObject();
-    
+
         if (xmlhttp==null) {
-            
+
             alert ("Browser does not support HTTP Request");
             return;
-            
+
         }
-        
+
         var url="monitor.php?sid="+Math.random();
-    
+
         xmlhttp.onreadystatechange=stateStartMonitor;
         xmlhttp.open("GET",url,true);
         xmlhttp.send(null);
-        
+
     }
-    
+
     function stateStartMonitor() {
-        
+
         if (xmlhttp.readyState==4) {
-            
+
             if (xmlhttp.responseText == 'Error' || xmlhttp.responseText == '') {
-                
+
                 alert("There was problem checking progress");
-            
+
             } else {
-                
+
                 var writeInfoArray = xmlhttp.responseText.split("|");
-                
+
                 if (writeInfoArray[2] != 'in' && writeInfoArray[2] != 'out' && writeInfoArray[2] != '' && writeInfoArray[4] == 2) {
-                
+
                     percentCompleted = parseInt(writeInfoArray[0]);
                     totalFileSize = parseInt(writeInfoArray[1]);
                     fileSizeWritten = parseInt(writeInfoArray[2]);
                     timeRemaining = writeInfoArray[3];
-                    
+
                     if (percentCompleted > 6 && percentCompleted <= 100) {
                         document.getElementById('progress_bar').style.width = percentCompleted+'%';
                         document.getElementById('unprogress_bar').style.width = (100 - percentCompleted)+'%';
                     }
                     document.getElementById('progress_bar').innerHTML = percentCompleted+'%';
-                    
+
                     var timeArray = timeRemaining.split(":");
-                    
+
                     var timeHours = parseInt(timeArray[0]);
                     var timeMinutes = parseInt(timeArray[1]);
                     var timeSeconds = parseInt(timeArray[2]);
-                    
+
                     if (timeHours > 0) {
-                        
+
                         if (timeHours > 1) {
                             hoursText = 'hours';
                         } else {
                             hoursText = 'hour';
                         }
                         document.getElementById('StatusMessage').innerHTML = '<strong>'+fileSizeWritten+'Mb</strong> of <strong>'+totalFileSize+'Mb</strong> written to device(s). <strong>' + timeHours + '</strong> ' + hourText + ' <strong>' + timeMinutes + '</strong> minutes remaining...';
-                        
+
                     } else if (timeMinutes > 0) {
-                        
+
                         if (timeMinutes > 1) {
                             minutesText = 'minutes';
                         } else {
                             minutesText = 'minute';
                         }
                         document.getElementById('StatusMessage').innerHTML = '<strong>'+fileSizeWritten+'Mb</strong> of <strong>'+totalFileSize+'Mb</strong> written to device(s). <strong>'+timeMinutes+'</strong> '+minutesText+' remaining...';
-                        
+
                     } else {
-                        
+
                         if (timeSeconds > 1) {
                             secondsText = 'seconds';
                         } else {
                             secondsText = 'second';
                         }
                         document.getElementById('StatusMessage').innerHTML = '<strong>'+fileSizeWritten+'Mb</strong> of <strong>'+totalFileSize+'Mb</strong> written to device(s). <strong>'+timeSeconds+'</strong> '+secondsText+' remaining...';
-                        
+
                     }
-                    
+
                     waitTime();
-                    
+
                 } else if (writeInfoArray[2] != 'out' && writeInfoArray[4] == 2) {
-                    
+
                     document.getElementById('progress_bar').style.width = '100%';
                     document.getElementById('progress_bar').style.backgroundColor = '#00CC33';
                     document.getElementById('progress_bar').innerHTML = 'Done...';
@@ -169,19 +169,16 @@ if (isset($_POST['WriteImage'])) {
                     document.getElementById('StatusMessage').innerHTML = 'Completed writing to device(s)';
 
                 } else if (writeInfoArray[4] == 2) {
-                    
+
                     document.getElementById('StatusMessage').innerHTML = 'Waiting for device(s) to be ready...';
 
                     waitTime();
 
                 }
-            
             }
-        
         }
-    
     }
-    
+
     function waitTime() {
         setTimeout("startMonitor()", 1000);
     }
@@ -225,29 +222,34 @@ if (isset($_POST['WriteImage'])) {
 			    <?php
 			    //get list of files in the image root
                 $ImageFiles = scandir('/etc/osid/imgroot');
-                
+
                 //create counter for files
                 $countFiles = 0;
-                
+
                 //loop through each file that has been found
                 foreach ($ImageFiles as &$Filename) {
-                    
+
                     //check that file is not one of these
                     if (substr($Filename, -4) == '.img' && substr($Filename, 0, 1) != '.') {
-                            
+
                         //create file size variable
-                        $FileSizeB = explode(" ", shell_exec("ls -s /etc/osid/imgroot/" . $Filename), 1);
+                        $FileSizeB = explode(' ', shell_exec('ls -s /etc/osid/imgroot/' . $Filename), 1);
                         $FileSizeGB = round(($FileSizeB[0] / 1024) / 1024, 2);
-                        
+
                         //increment counter
                         $countFiles++;
                 ?>
-			    <input type="radio" id="ImageToUse<?php echo $countFiles; ?>" name="ImageToUse" value="<?php echo $Filename; ?>"<?php if ($countFiles == 1) { ?> checked="checked"<?php } ?> />&nbsp;<?php echo $Filename; ?> (<?php echo $FileSizeGB; ?>GB)<br />
+			    <input type="radio" id="ImageToUse<?php echo $countFiles;
+                                     ?>" name="ImageToUse" value="<?php echo $Filename;
+                                     ?>"<?php if ($countFiles == 1) {
+                                     ?> checked="checked"<?php }
+                                     ?> />&nbsp;<?php echo $Filename;
+                                     ?> (<?php echo $FileSizeGB;
+                                     ?>GB)<br />
 			    <?php
                     } //END check that file is not one of these
-                    
                 } //END loop through each file that has been found
-                
+
                 //check if the array is empty
                 if ($countFiles == 0) {
 			    ?>
@@ -263,34 +265,39 @@ if (isset($_POST['WriteImage'])) {
                 <?php
                 //get list of attached devices
                 $DeviceList = shell_exec("lsblk -d | awk -F: '{print $1}' | awk '{print $1}'");
-                
+
                 //put list into array
                 $DeviceArray = explode("\n", $DeviceList);
-                
+
                 //create counter
                 $countDevices = 1;
-                
+
                 //output contents of array
                 foreach ($DeviceArray as &$Device) {
-                    
+
                     //check this is not the column header or system device
                     if (!($Device == 'NAME' || $Device == 'mmcblk0' || $Device == '')) {
-                    
+
                         //create device id
-                        $DeviceID = str_replace("sd", "", $Device);
-                        
+                        $DeviceID = str_replace('sd', '', $Device);
+
                         //create device size in gb
-                        $DeviceSize = round(((shell_exec("cat /sys/block/sd" . $DeviceID . "/size") / 2) / 1024) / 1024, 2);
+                        $DeviceSize = round(((shell_exec('cat /sys/block/sd' . $DeviceID . '/size') / 2) / 1024) / 1024, 2);
                 ?>
-                <input type="checkbox" id="Device<?php echo strtoupper($DeviceID); ?>" name="Device[]" value="<?php echo $Device; ?>" checked="checked"<?php if ($countFiles == 0) { ?> disabled="disabled"<?php } ?> /> Device <?php echo $countDevices; ?> (<?php echo $DeviceSize; ?>GB)<br />
+                <input type="checkbox" id="Device<?php echo strtoupper($DeviceID);
+                         ?>" name="Device[]" value="<?php echo $Device;
+                         ?>" checked="checked"<?php if ($countFiles == 0) {
+                         ?> disabled="disabled"<?php }
+                         ?> /> Device <?php echo $countDevices;
+                         ?> (<?php echo $DeviceSize;
+                         ?>GB)<br />
                 <?php
                         //increment counter
                         $countDevices++;
-                        
+
                     } //END check this is not the column header or system device
-                
                 } //END output contents of array
-                
+
                 //check if the array is empty
                 if ($countDevices == 1) {
                 ?>
@@ -303,7 +310,9 @@ if (isset($_POST['WriteImage'])) {
 		<div class="one-third column">
             <h4>Start writing to devices:</h4>
             <p>
-                <input type="submit" id="WriteImage" name="WriteImage" value="Write Image to Devices"<?php if ($countFiles == 0) { ?> disabled="disabled" style="color: #666;"<?php } ?> />
+                <input type="submit" id="WriteImage" name="WriteImage" value="Write Image to Devices"<?php if ($countFiles == 0) {
+                         ?> disabled="disabled" style="color: #666;"<?php }
+                         ?> />
             </p>
             </form>
         </div>
@@ -316,13 +325,13 @@ if (isset($_POST['WriteImage'])) {
         </div>
 
 	</div><!-- container -->
-	
+
     <?php
     //clear the stat cache before checking size of file
     clearstatcache();
-    
+
     //check if the form was submitted
-    if (isset($_POST['WriteImage']) || !(filesize('/etc/osid/system/progress.info') == 0) || shell_exec("cat /etc/osid/system/status.info") == 2 || shell_exec("cat /etc/osid/system/status.info") == 1) {
+    if (isset($_POST['WriteImage']) || !(filesize('/etc/osid/system/progress.info') == 0) || shell_exec('cat /etc/osid/system/status.info') == 2 || shell_exec('cat /etc/osid/system/status.info') == 1) {
     ?>
     <div id="progress_bg">
         <div id="progress_display">
@@ -339,7 +348,7 @@ if (isset($_POST['WriteImage'])) {
     <?php
     } //END check if the form was submitted
     ?>
-    
+
 <!-- End Document
 ================================================== -->
 </body>
