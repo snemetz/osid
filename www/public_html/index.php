@@ -1,17 +1,17 @@
 <?php
 //check if the form has been submitted
 if (isset($_POST['WriteImage'])) {
-    
+
     //make sure imagefile.info is blank
     shell_exec('cat /dev/null > /etc/osid/system/imagefile.info');
-    
+
     //write selected image to the info file
     shell_exec('echo "' . $_POST['ImageToUse'] . '" > /etc/osid/system/imagefile.info');
 
     //declare DeviceList and UmountList variables
     $DeviceList = '';
     $UmountList = '';
-    
+
     //create device list from checkbox array
     foreach ($_POST['Device'] as &$DeviceName) {
 
@@ -20,7 +20,6 @@ if (isset($_POST['WriteImage'])) {
 
         //put device into variable for unmounting of drives
         $UmountList .= '/usr/bin/umount /dev/' . $DeviceName . ' & ';
-
     } //END create device list from checkbox array
 
     //trim off trailing space from device list varaible
@@ -46,7 +45,6 @@ if (isset($_POST['WriteImage'])) {
 
     //set the status.info to one (start job)
     shell_exec('echo "1" > /etc/osid/system/status.info');
-
 } //END check if the form has been submitted
 ?>
 <!DOCTYPE html>
@@ -220,7 +218,7 @@ if (isset($_POST['WriteImage'])) {
 			<h4>Select an image:</h4>
 			<p>
 			    <?php
-			    //get list of files in the image root
+			      //get list of files in the image root
                 $ImageFiles = scandir('/etc/osid/imgroot');
 
                 //create counter for files
@@ -294,7 +292,6 @@ if (isset($_POST['WriteImage'])) {
                 <?php
                         //increment counter
                         $countDevices++;
-
                     } //END check this is not the column header or system device
                 } //END output contents of array
 
