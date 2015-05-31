@@ -15,15 +15,15 @@ $char = fgetc($f);
 
 //Trim trailing newline chars of the file
 while ($char === "\n" || $char === "\r") {
-  fseek($f, $cursor--, SEEK_END);
-  $char = fgetc($f);
+    fseek($f, $cursor--, SEEK_END);
+    $char = fgetc($f);
 }
 
 //Read until the start of file or first newline char
 while ($char !== false && $char !== "\n" && $char !== "\r") {
-  $line = $char.$line;
-  fseek($f, $cursor--, SEEK_END);
-  $char = fgetc($f);
+    $line = $char.$line;
+    fseek($f, $cursor--, SEEK_END);
+    $char = fgetc($f);
 }
 
 //explode returned line into array
@@ -45,7 +45,7 @@ $TimeRemaining = $LineArray[7];
 
 //check if PercentCompleted is 100 and WriteStatus is 2
 if ($PercentCompleted == 100 && $WriteStatus == 2) {
-  shell_exec('echo "0" > /etc/osid/system/status.info');
+    shell_exec('echo "0" > /etc/osid/system/status.info');
 }
 
 //output delimited string
